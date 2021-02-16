@@ -1,0 +1,40 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: main
+spec:
+  entrypoint: main
+  templates:
+    - name: main
+      steps:
+        - - name: generate-date-parameters
+            templateRef:
+              name: daily-job
+              template: main
+        - - name: sendWelcomeLetters
+            template: sendWelcomeLetters
+    - name: sendWelcomeLetters
+      container:
+        image: eu.gcr.io/anyfin-staging/api:fca963985fa5726805a759881bc8bb0b222feeeb
+        command:
+          - node
+        args: 
+          - "/home/node/app/dist/scripts/sendWelcomeLetterDE.js"
+          - "--fromInclusiveDate {{steps.generate-date-parameters.outputs.parameters.yesterday_date}}"
+          - "--toExclusiveDate {{steps.generate-date-parameters.outputs.parameters.date}}"
+        envFrom:
+          - secretRef:
+              name: api-secrets
+          - configMapRef:
+              name: api-config
+        volumeMounts:
+          - name: google-service-account-key
+            mountPath: /home/node/app/secrets/google
+            readOnly: true
+        env:
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /home/node/app/secrets/google/api-google-service-account.json
+      volumes:
+        - name: google-service-account-key
+          secret:
+            secretName: api-google-service-account

@@ -1,0 +1,11 @@
+---
+# Daily runs
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: daily-job
+spec:
+  schedule: '* * * * *'
+  workflowSpec:
+    workflowTemplateRef:
+      name: daily-job

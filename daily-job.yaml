@@ -1,0 +1,44 @@
+# Template of the Job - defines the job and the parameters it accepts
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: daily-job
+spec:
+  entrypoint: main
+  templates:
+    - name: main
+      inputs:
+        parameters:
+          - name: yesterday_date
+            value: '{{ inputs.parameters.yesterday_date }}'
+            default: default
+          - name: date
+            value: '{{ inputs.parameters.date }}'
+            default: default
+      outputs:
+        parameters:
+        - name: date
+          valueFrom:
+            default: ""   # Default value to use if retrieving valueFrom fails. If not provided workflow will fail instead
+            path: /tmp/date.txt
+        - name: yesterday_date
+          valueFrom:
+            default: ""   # Default value to use if retrieving valueFrom fails. If not provided workflow will fail instead
+            path: /tmp/yesterday_date.txt
+      script:
+        image: ubuntu:latest # TODO: change please to alpine
+        command:
+          - sh
+        source: |
+          yesterday_date="{{ inputs.parameters.yesterday_date }}"
+          if [ $yesterday_date = "default" ]; then
+            yesterday_date=$(date -d yesterday +%Y-%m-%d)
+          fi
+          date="{{ inputs.parameters.date }}"
+          if [ $date = "default" ]; then
+            date=$(date -d today +%Y-%m-%d)
+          fi
+          echo "run for $date"
+          echo "run for $yesterday_date"
+          echo -n $date > /tmp/date.txt
+          echo -n $yesterday_date > /tmp/yesterday_date.txt

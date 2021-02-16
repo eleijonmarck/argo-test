@@ -1,0 +1,47 @@
+
+# 1. workflow template - generate parameters
+# 2. worflow template - use parameters as input to command
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: workflow-template-inner-steps
+spec:
+  entrypoint: main
+  templates:
+  - name: main
+    steps:
+      - - name: prepare-parameters
+          templateRef:
+            name: workflow-template-whalesay-template
+            template: prepare-parameters
+      - - name: outputit
+          templateRef:
+            name: workflow-template-whalesay-template
+            template: whalesay-template
+          arguments:
+            parameters:
+            - name: message
+              value: "inner-hello2a"
+    inputs:
+      parameters:
+        - name: yesterday_date
+          value: '{{ prepare-parameters.parameters.yesterday_date }}'
+          default: default
+        - name: date
+          value: '{{ inputs.parameters.date }}'
+          default: default
+  - name: prepare-parameters
+    script:
+      image: busybox:latest
+      command:
+        - sh
+      source: |
+        yesterday_date="{{ inputs.parameters.yesterday_date }}"
+        if [ $yesterday_date = "default"" ]; then
+          yesterday_date=$(date -d yesterday +%Y-%m-%d)
+        fi
+        date="{{ inputs.parameters.date }}"
+        if [ $date = "default"" ]; then
+          date=$(date -d today +%Y-%m-%d)
+        fi
+  
