@@ -44,4 +44,4 @@ spec:
         if [ $date = "default"" ]; then
           date=$(date -d today +%Y-%m-%d)
         fi
-  
+
