@@ -11,6 +11,15 @@ cons
 - since it is context aware, most operations are not selfcontained and is therefore a bit harded to scale up and depend on the implemetation that airflow provides
 - python focused, makes it hard for non-python devs to come in and work around airflow and its setup
 
+Argo
+pros
+- events (notifications) and first-class api for the different jobs.
+- UI
+- scheduling was quite easy and with dag capabilities if we would like
+- easy deploy, kubectl apply argo -f , so easy to handle upgrades (probably)
+cons
+- ALOT of yaml
+
 ## workflow
 
 A workflow should be seen as a function or method in any programming language.
