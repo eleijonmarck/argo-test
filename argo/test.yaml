@@ -1,0 +1,58 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  name: wtf
+spec:
+  entrypoint: start
+  templates:
+    - name: start
+      steps:
+        - - name: generate-date-parameters
+            templateRef:
+              name: daily-job
+              template: main
+        - - name: sendWelcomeLetters
+            template: sendWelcomeLetters
+            arguments:
+              parameters:
+              # Pass the hello-param output from the generate-parameter step as the message input to print-message
+              - name: fromInclusiveDate
+                value: "{{steps.generate-date-parameters.outputs.parameters.yesterday_date}}"
+              # Pass the hello-param output from the generate-parameter step as the message input to print-message
+              - name: toExclusiveDate
+                value: "{{steps.generate-date-parameters.outputs.parameters.date}}"
+    - name: sendWelcomeLetters
+      inputs:
+        parameters:
+        - name: yesterday_date
+          value: "{{inputs.parameters.yesterday_date}}"
+        - name: date
+          value: "{{inputs.parameters.date}}"
+      container:
+        image: eu.gcr.io/anyfin-staging/api:fca963985fa5726805a759881bc8bb0b222feeeb
+        command:
+          - node
+        args: 
+          - "{{inputs.parameters.yesterday_date}}"
+          - "{{inputs.parameters.date}}"
+          # - "/home/node/app/dist/scripts/sendWelcomeLetterDE.js"
+          # - "--fromInclusiveDate"
+          # - "{{inputs.parameters.yesterday_date}}"
+          # - "--toExclusiveDate"
+          # - "{{inputs.parameters.date}}"
+        envFrom:
+          - secretRef:
+              name: api-secrets
+          - configMapRef:
+              name: api-config
+        volumeMounts:
+          - name: google-service-account-key
+            mountPath: /home/node/app/secrets/google
+            readOnly: true
+        env:
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /home/node/app/secrets/google/api-google-service-account.json
+      volumes:
+        - name: google-service-account-key
+          secret:
+            secretName: api-google-service-account
