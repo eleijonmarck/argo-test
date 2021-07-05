@@ -5,18 +5,22 @@ Airflow keeps the state of each operation and saves the context of the operation
 
 Airflow
 pros
+
 - context is saved, so we can get a glimpse of what happened and when it happened, and rerun that job once it is fixed
 - batteries included, alot of operations are built in, such as the sftp hook or gcp hooks.
 cons
+
 - since it is context aware, most operations are not selfcontained and is therefore a bit harded to scale up and depend on the implemetation that airflow provides
 - python focused, makes it hard for non-python devs to come in and work around airflow and its setup
 
 Argo
 pros
+
 - events (notifications) and first-class api for the different jobs.
 - UI
 - scheduling was quite easy and with dag capabilities if we would like
 - easy deploy, kubectl apply argo -f , so easy to handle upgrades (probably)
+
 cons
 - ALOT of yaml
 
